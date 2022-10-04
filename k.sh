@@ -150,7 +150,7 @@ k () {
   K_COLOR_SG="30;46" # sg:executable with setgid bit set
   K_COLOR_TW="30;42" # tw:directory writable to others, with sticky bit
   K_COLOR_OW="30;43" # ow:directory writable to others, without sticky bit
-  K_COLOR_BR="0;30"  # branch
+  K_COLOR_BR="214"   # branch
 
   # read colors if osx and $LSCOLORS is defined
   if [[ $(uname) == 'Darwin' && -n $LSCOLORS ]]; then
@@ -167,11 +167,6 @@ k () {
     K_COLOR_TW=$(_k_bsd_to_ansi $LSCOLORS[19] $LSCOLORS[20])
     K_COLOR_OW=$(_k_bsd_to_ansi $LSCOLORS[21] $LSCOLORS[22])
   fi
-
-  # read colors if linux and $LS_COLORS is defined
-  # if [[ $(uname) == 'Linux' && -n $LS_COLORS ]]; then
-
-  # fi
 
   # ----------------------------------------------------------------------------
   # Loop over passed directories and files to display
@@ -511,7 +506,7 @@ k () {
       # --------------------------------------------------------------------------
       # Colour branch
       # --------------------------------------------------------------------------
-      REPOBRANCH=$'\e['"$K_COLOR_BR"'m'"$REPOBRANCH"$'\e[0m';
+      REPOBRANCH=$'\e[38;5;'"${K_COLOR_BR}m$REPOBRANCH"$'\e[0m'
 
       # --------------------------------------------------------------------------
       # Format symlink target
