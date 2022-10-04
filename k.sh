@@ -323,13 +323,12 @@ k () {
     echo "total $TOTAL_BLOCKS"
 
     # ----------------------------------------------------------------------------
-    # Loop through each line of stat, pad where appropriate and do git dirty checking
+    # Loop through each line of stat, pad where appropriate
     # ----------------------------------------------------------------------------
 
-    typeset REPOMARKER
     typeset REPOBRANCH
     typeset PERMISSIONS HARDLINKCOUNT OWNER GROUP FILESIZE FILESIZE_OUT DATE NAME SYMLINK_TARGET
-    typeset FILETYPE PER1 PER2 PER3 PERMISSIONS_OUTPUT STATUS
+    typeset FILETYPE PER1 PER2 PER3 PERMISSIONS_OUTPUT
     typeset TIME_DIFF TIME_COLOR DATE_OUTPUT
     typeset -i IS_DIRECTORY IS_SYMLINK IS_SOCKET IS_PIPE IS_EXECUTABLE IS_BLOCK_SPECIAL IS_CHARACTER_SPECIAL HAS_UID_BIT HAS_GID_BIT HAS_STICKY_BIT IS_WRITABLE_BY_OTHERS
     typeset -i COLOR
@@ -340,7 +339,6 @@ k () {
       sv=("${(@Pkv)statvar}")
 
       # We check if the result is a git repo later, so set a blank marker indication the result is not a git repo
-      REPOMARKER=" "
       REPOBRANCH=""
       IS_DIRECTORY=0
       IS_SYMLINK=0
@@ -477,41 +475,11 @@ k () {
       # Apply colour to formated date
       DATE_OUTPUT=$'\e[38;5;'"${TIME_COLOR}m${DATE_OUTPUT}"$'\e[0m'
 
-      # --------------------------------------------------------------------------
-      # Colour the repomarker
-      # --------------------------------------------------------------------------
-      if [[ "$o_no_vcs" != "" ]]; then
-        REPOMARKER=""
-      elif (( IS_GIT_REPO != 0)); then
+      if (( IS_GIT_REPO != 0)); then
         # If we're not in a repo, still check each directory if it's a repo, and
         # then mark appropriately
         if (( INSIDE_WORK_TREE == 0 )); then
           REPOBRANCH=$(command git --git-dir="$GIT_TOPLEVEL/.git" --work-tree="${NAME}" rev-parse --abbrev-ref HEAD 2>/dev/null)
-          if (( IS_DIRECTORY )); then
-            if command git --git-dir="$GIT_TOPLEVEL/.git" --work-tree="${NAME}" diff --stat --quiet --ignore-submodules HEAD &>/dev/null # if dirty
-              then REPOMARKER=$'\e[38;5;46m|\e[0m' # Show a green vertical bar for clean
-              else REPOMARKER=$'\e[0;31m+\e[0m' # Show a red vertical bar if dirty
-            fi
-          fi
-        else
-          if (( IS_DIRECTORY )); then
-            # If the directory isn't ignored or clean, we'll just say it's dirty
-            if command git check-ignore --quiet ${NAME} 2>/dev/null; then STATUS='!!'
-            elif command git diff --stat --quiet --ignore-submodules ${NAME} 2> /dev/null; then STATUS='';
-            else STATUS=' M'
-            fi
-          else
-            # File
-            STATUS=$(command git status --porcelain --ignored --untracked-files=normal $GIT_TOPLEVEL/${${${NAME:a}##$GIT_TOPLEVEL}#*/})
-          fi
-          STATUS=${STATUS[1,2]}
-            if [[ $STATUS == ' M' ]]; then REPOMARKER=$'\e[0;31m+\e[0m';     # Tracked & Dirty
-          elif [[ $STATUS == 'M ' ]]; then REPOMARKER=$'\e[38;5;082m+\e[0m'; # Tracked & Dirty & Added
-          elif [[ $STATUS == '??' ]]; then REPOMARKER=$'\e[38;5;214m+\e[0m'; # Untracked
-          elif [[ $STATUS == '!!' ]]; then REPOMARKER=$'\e[38;5;238m|\e[0m'; # Ignored
-          elif [[ $STATUS == 'A ' ]]; then REPOMARKER=$'\e[38;5;082m+\e[0m'; # Added
-          else                             REPOMARKER=$'\e[38;5;082m|\e[0m'; # Good
-          fi
         fi
       fi
 
@@ -553,7 +521,7 @@ k () {
       # --------------------------------------------------------------------------
       # Display final result
       # --------------------------------------------------------------------------
-      print -r -- "$PERMISSIONS_OUTPUT $HARDLINKCOUNT $OWNER $GROUP $FILESIZE_OUT $DATE_OUTPUT $REPOMARKER $NAME$SYMLINK_TARGET $REPOBRANCH"
+      print -r -- "$PERMISSIONS_OUTPUT $HARDLINKCOUNT $OWNER $GROUP $FILESIZE_OUT $DATE_OUTPUT $NAME$SYMLINK_TARGET $REPOBRANCH"
 
       k=$((k+1)) # Bump loop index
     done
